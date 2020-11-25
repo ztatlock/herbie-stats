@@ -11,7 +11,7 @@ with open(jsonp, 'r') as f:
     ts = json.load(f)
 
 for t in ts:
-    fig, ax = plt.subplots(figsize=(20,20))
+    fig, ax = plt.subplots(figsize=(10,10))
     ax.scatter(t['x'], t['y'])
 
     ax.set_title('{}: {} vs. {}'.format(t['test'], x_field, y_field))
@@ -19,5 +19,7 @@ for t in ts:
     ax.set_ylabel(y_field)
 
     plt.tight_layout()
-    plt.savefig('by-test-{}-{}-versus{}.pdf'.format(t['test'], x_field, y_field))
+    p = 'versus-plots/by-test-{}-{}-versus-{}.pdf'.format(
+            t['test'], x_field, y_field)
+    plt.savefig(p)
     plt.close(fig)

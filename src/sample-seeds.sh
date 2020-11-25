@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-NSEEDS=100
-
-if [ -z "$HERBIE" ]; then
-  echo "ERROR: environment variable HERBIE must point to herbie directory."
-  exit 1
-fi
-
 # determine physical directory of this script
 src="${BASH_SOURCE[0]}"
 while [ -L "$src" ]; do
@@ -16,8 +9,15 @@ while [ -L "$src" ]; do
 done
 MYDIR="$(cd -P "$(dirname "$src")" && pwd)"
 
+if [ -z "$HERBIE" ]; then
+  echo "ERROR: environment variable HERBIE must point to herbie directory."
+  exit 1
+fi
+
+NSEEDS=5
+
 # allocate space for output
-tstamp="$(date "+%Y-%m-%d_%H:%M:%S")"
+tstamp="$(date "+%Y-%m-%d_%H%M")"
 output="$MYDIR/../output/seed-variance/$tstamp"
 mkdir -p "$output"
 

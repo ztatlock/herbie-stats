@@ -7,11 +7,15 @@ jsonp = sys.argv[1]
 field = sys.argv[2]
 
 with open(jsonp, 'r') as f:
-    data = json.load(f)
+    ss = json.load(f)
+
+labs = [s['seed'] for s in ss]
+data = [s['data'] for s in ss]
 
 fig, ax = plt.subplots()
 ax.violinplot(data)
 ax.set_xlabel('{} seeds'.format(len(data)))
+
 ax.set_ylabel('sum({})'.format(field))
 
 plt.tight_layout()

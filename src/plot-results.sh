@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-# caller should pass path to output from sampler
-cd "$1"
-
-if [ ! -f "all.json" ]; then
-  echo "ERROR: no 'all.json' in '$1'"
-  exit 1
-fi
-
 # determine physical directory of this script
 src="${BASH_SOURCE[0]}"
 while [ -L "$src" ]; do
@@ -16,6 +8,14 @@ while [ -L "$src" ]; do
   [[ $src != /* ]] && src="$dir/$src"
 done
 MYDIR="$(cd -P "$(dirname "$src")" && pwd)"
+
+# caller should pass path to output from sampler
+cd "$1"
+
+if [ ! -f "all.json" ]; then
+  echo "ERROR: no 'all.json' in '$1'"
+  exit 1
+fi
 
 # munge and plot results
 jq 'group_by(.seed)' all.json > by-seed.json
@@ -26,7 +26,9 @@ function plot-seed-field {
 
   cat by-seed.json \
     | jq --arg FIELD "$field" \
-        'map(map(.[$FIELD]) | add)' \
+        'map({ "seed": .[0].seed
+             , "data": map(.[$FIELD]) | add
+             })' \
     > "by-seed-${field}.json"
 
   python3 "$MYDIR/seed-violin-plot.py" \
@@ -89,6 +91,7 @@ for f in $fields; do
   plot-test-field "$f"
 done
 
+mkdir "versus-plots"
 plot-test-versus "time_improve"  "avg_bits_err_output"
 plot-test-versus "time_improve"  "avg_bits_err_improve"
 plot-test-versus "time_improve"  "output_parens"
