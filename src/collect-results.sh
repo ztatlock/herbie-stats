@@ -46,9 +46,6 @@ for rj in $(find . -name 'results.json' | sort); do
          , "avg_bits_err_input": .start
          , "avg_bits_err_output": .end
          , "avg_bits_err_improve": (.start - .end)
-         , "avg_ulps_err_input": pow(2; .start)
-         , "avg_ulps_err_output": pow(2; .end)
-         , "avg_ulps_err_improve": (pow(2; .start) - pow(2; .end))
          , "time_improve": .time
          , "seed": $SEED
          , "npts": $NPTS

@@ -78,9 +78,6 @@ fields="
   avg_bits_err_input
   avg_bits_err_output
   avg_bits_err_improve
-  avg_ulps_err_input
-  avg_ulps_err_output
-  avg_ulps_err_improve
   time_improve"
 
 for f in $fields; do
@@ -93,7 +90,7 @@ done
 
 mkdir "versus-plots"
 plot-test-versus "time_improve"  "avg_bits_err_output"
-plot-test-versus "time_improve"  "avg_bits_err_improve"
 plot-test-versus "time_improve"  "output_parens"
 plot-test-versus "output_parens" "avg_bits_err_output"
-plot-test-versus "output_parens" "avg_bits_err_improve"
+## plot-test-versus "time_improve"  "avg_bits_err_improve"
+## plot-test-versus "output_parens" "avg_bits_err_improve"
