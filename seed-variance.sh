@@ -2,6 +2,10 @@
 
 set -e
 
+# support for exporting bash environment to parallel
+source $(which env_parallel.bash)
+env_parallel --record-env
+
 # determine physical directory of this script
 src="${BASH_SOURCE[0]}"
 while [ -L "$src" ]; do
@@ -17,6 +21,7 @@ if [ -z "$HERBIE" ]; then
 fi
 
 NSEEDS=100
+PARALLEL_SEEDS=3
 
 #
 #   SAMPLE SEEDS
@@ -27,8 +32,9 @@ tstamp="$(date "+%Y-%m-%d_%H%M")"
 output="$MYDIR/output/seed-variance/$tstamp"
 mkdir -p "$output"
 
-# sample herbie behavior
-for seed in $(seq $NSEEDS); do
+function do_seed {
+  seed="$1"
+
   seed_output="$output/$(printf "%03d" "$seed")"
   mkdir -p "$seed_output"
 
@@ -37,7 +43,26 @@ for seed in $(seq $NSEEDS); do
     --seed "$seed" \
     "$HERBIE/bench/hamming/" \
     "$seed_output"
-done
+}
+
+seq $NSEEDS \
+  | env_parallel \
+      --env _ \
+      --jobs $PARALLEL_SEEDS \
+      --halt now,fail=1 \
+      do_seed
+
+## # sample herbie behavior
+## for seed in $(seq $NSEEDS); do
+##   seed_output="$output/$(printf "%03d" "$seed")"
+##   mkdir -p "$seed_output"
+##
+##   racket "$HERBIE/src/herbie.rkt" report \
+##     --threads yes \
+##     --seed "$seed" \
+##     "$HERBIE/bench/hamming/" \
+##     "$seed_output"
+## done
 
 #
 #   COLLECT OUTPUT
