@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
+# exit immediately upon first error
 set -e
-
-# support for exporting bash environment to parallel
-source $(which env_parallel.bash)
-env_parallel --record-env
 
 # determine physical directory of this script
 src="${BASH_SOURCE[0]}"
@@ -15,13 +12,32 @@ while [ -L "$src" ]; do
 done
 MYDIR="$(cd -P "$(dirname "$src")" && pwd)"
 
+# ensure we know where Herbie lives
 if [ -z "$HERBIE" ]; then
   echo "ERROR: environment variable HERBIE must point to herbie directory."
   exit 1
 fi
 
-NSEEDS=100
-PARALLEL_SEEDS=3
+# determine number of seeds to sample
+if [ -z "$1" ]; then
+  echo "Usage: $0 NUM_SEEDS"
+  exit 1
+else
+  NSEEDS="$1"
+fi
+
+# advise user of execution plan
+if [ -z "$PARALLEL_SEEDS" ]; then
+  echo "Using Herbie concurrency only."
+else
+  # support for exporting bash environment to parallel
+  source $(which env_parallel.bash)
+  env_parallel --record-env
+
+  echo "Using multiple concurrent Herbie runs in parallel."
+  echo "Restricting to $PARALLEL_SEEDS parallel concurrent Herbie runs."
+fi
+
 
 #
 #   SAMPLE SEEDS
@@ -45,24 +61,29 @@ function do_seed {
     "$seed_output"
 }
 
-seq $NSEEDS \
-  | env_parallel \
-      --env _ \
-      --jobs $PARALLEL_SEEDS \
-      --halt now,fail=1 \
-      do_seed
+# sample herbie behavior
+if [ -z "$PARALLEL_SEEDS" ]; then
+  # by default, do not use parallel
+  for seed in $(seq "$NSEEDS"); do
+    do_seed "$seed"
+  done
+else
+  # conditionally use parallel
+  #
+  # Note that Herbie can already use up to # of benchmarks cores,
+  # so this probably only makes sense if you have PARALLEL_SEEDS
+  # set to something less than # of cores divided by # of benchmarks,
+  # i.e., you have a lot of cores. We're not at all careful to get
+  # solid timing numbers, but going higher any than that will make
+  # any time measurements even less meaningful.
+  seq "$NSEEDS" \
+    | env_parallel \
+        --env _ \
+        --jobs "$PARALLEL_SEEDS" \
+        --halt now,fail=1 \
+        do_seed
+fi
 
-## # sample herbie behavior
-## for seed in $(seq $NSEEDS); do
-##   seed_output="$output/$(printf "%03d" "$seed")"
-##   mkdir -p "$seed_output"
-##
-##   racket "$HERBIE/src/herbie.rkt" report \
-##     --threads yes \
-##     --seed "$seed" \
-##     "$HERBIE/bench/hamming/" \
-##     "$seed_output"
-## done
 
 #
 #   COLLECT OUTPUT
