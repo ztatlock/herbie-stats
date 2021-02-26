@@ -20,10 +20,11 @@ fi
 
 # determine number of seeds to sample
 if [ -z "$1" ]; then
-  echo "Usage: $0 NUM_SEEDS"
+  echo "Usage: $0 NUM_SEEDS RESULT_PATH"
   exit 1
 else
   NSEEDS="$1"
+  RESPATH="$2"
 fi
 
 # advise user of execution plan
@@ -45,7 +46,7 @@ fi
 
 # allocate space for output
 tstamp="$(date "+%Y-%m-%d_%H%M")"
-output="$MYDIR/output/seed-variance/$tstamp"
+output="$MYDIR/output/$RESPATH/seed-variance/$tstamp"
 mkdir -p "$output"
 
 function do_seed {
