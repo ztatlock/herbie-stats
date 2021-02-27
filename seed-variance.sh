@@ -19,7 +19,7 @@ if [ -z "$HERBIE" ]; then
 fi
 
 # determine number of seeds to sample
-if [ -z "$1" ]; then
+if [ -z "$1" ] || [ -z "$2" ]; then
   echo "Usage: $0 NUM_SEEDS RESULT_PATH"
   exit 1
 else
