@@ -20,10 +20,28 @@ fi
 
 # determine number of seeds to sample
 if [ -z "$1" ]; then
-  echo "Usage: $0 NUM_SEEDS"
+  echo "Usage: $0 <seeds>"
   exit 1
 else
   NSEEDS="$1"
+fi
+
+# advise user of benchmark location
+if [ -z "$BENCH" ]; then
+  BENCH="bench/hamming"
+  echo "Defaulting to benchmarks at $HERBIE/$BENCH"
+else
+  # support for exporting bash environment to parallel
+  echo "Running on benchmarks at $HERBIE/$BENCH"
+fi
+
+# advise user of threads
+if [ -z "$THREADS" ]; then
+  THREADS="yes"
+  echo "Using maximum number of threads"
+else
+  # support for exporting bash environment to parallel
+  echo "Using $THREADS threads for each run"
 fi
 
 # advise user of execution plan
@@ -55,9 +73,9 @@ function do_seed {
   mkdir -p "$seed_output"
 
   racket "$HERBIE/src/herbie.rkt" report \
-    --threads yes \
+    --threads $THREADS \
     --seed "$seed" \
-    "$HERBIE/bench/hamming/" \
+    "$HERBIE/$BENCH" \
     "$seed_output"
 }
 
