@@ -56,6 +56,16 @@ else
   echo "Restricting to $PARALLEL_SEEDS parallel concurrent Herbie runs."
 fi
 
+# advise user of single/multi-objective optimization
+if [ -z "$PARETO_ITERS" ]; then
+  echo "Using single-objective optimization"
+elif [ "$PARETO_ITERS" == "yes" ]; then
+  PARETO_ITERS=4
+  echo "Using multi-objective optimization with $PARETO_ITERS iters (default)"
+else
+  echo "Using multi-objective optimization with $PARETO_ITERS iters"
+fi
+
 
 #
 #   SAMPLE SEEDS
@@ -63,7 +73,7 @@ fi
 
 # allocate space for output
 tstamp="$(date "+%Y-%m-%d_%H%M")"
-output="$MYDIR/output/seed-variance/$tstamp"
+output="$MYDIR/output/ruler/$tstamp"
 mkdir -p "$output"
 
 function do_seed {
@@ -72,11 +82,21 @@ function do_seed {
   seed_output="$output/$(printf "%03d" "$seed")"
   mkdir -p "$seed_output"
 
-  racket "$HERBIE/src/herbie.rkt" report \
-    --threads $THREADS \
-    --seed "$seed" \
-    "$HERBIE/$BENCH" \
-    "$seed_output"
+  if [ -z "$PARETO_ITERS" ]; then
+    racket "$HERBIE/src/herbie.rkt" report \
+      --threads $THREADS \
+      --seed "$seed" \
+      "$HERBIE/$BENCH" \
+      "$seed_output"
+  else
+    racket "$HERBIE/src/herbie.rkt" report \
+      --threads $THREADS \
+      --seed "$seed" \
+      --num-iters "$PARETO_ITERS" \
+      --pareto \
+      "$HERBIE/$BENCH" \
+      "$seed_output"
+  fi
 }
 
 # sample herbie behavior
@@ -155,6 +175,7 @@ for rj in $(find . -name 'results.json' | sort); do
          , "avg_bits_err_input": .start
          , "avg_bits_err_output": .end
          , "avg_bits_err_improve": (.start - .end)
+         , "pareto": .pareto
          , "time_improve": .time
          , "seed": $SEED
          , "npts": $NPTS

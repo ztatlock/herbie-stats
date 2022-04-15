@@ -78,7 +78,8 @@ fields="
   avg_bits_err_input
   avg_bits_err_output
   avg_bits_err_improve
-  time_improve"
+  time_improve
+  pareto"
 
 for f in $fields; do
   plot-seed-field "$f"
