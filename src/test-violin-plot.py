@@ -20,7 +20,7 @@ ax.set_xticks(np.arange(1, len(labs) + 1))
 ax.set_xticklabels(labs, rotation=45, ha='right')
 
 ax.set_ylabel(field)
-ax.set_yticks(np.arange(0, 64, step=1))
+ax.set_yticks(np.arange(0, 64, step=4))
 
 plt.tight_layout()
 plt.savefig('by-test-{}-violin.pdf'.format(field))
