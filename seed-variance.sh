@@ -20,10 +20,28 @@ fi
 
 # determine number of seeds to sample
 if [ -z "$1" ]; then
-  echo "Usage: $0 NUM_SEEDS"
+  echo "Usage: $0 <seeds>"
   exit 1
 else
   NSEEDS="$1"
+fi
+
+# advise user of benchmark location
+if [ -z "$BENCH" ]; then
+  BENCH="bench/hamming"
+  echo "Defaulting to benchmarks at $HERBIE/$BENCH"
+else
+  # support for exporting bash environment to parallel
+  echo "Running on benchmarks at $HERBIE/$BENCH"
+fi
+
+# advise user of threads
+if [ -z "$THREADS" ]; then
+  THREADS="yes"
+  echo "Using maximum number of threads"
+else
+  # support for exporting bash environment to parallel
+  echo "Using $THREADS threads for each run"
 fi
 
 # advise user of execution plan
@@ -36,6 +54,16 @@ else
 
   echo "Using multiple concurrent Herbie runs in parallel."
   echo "Restricting to $PARALLEL_SEEDS parallel concurrent Herbie runs."
+fi
+
+# advise user of single/multi-objective optimization
+if [ -z "$PARETO_ITERS" ]; then
+  echo "Using single-objective optimization"
+elif [ "$PARETO_ITERS" == "yes" ]; then
+  PARETO_ITERS=4
+  echo "Using multi-objective optimization with $PARETO_ITERS iters (default)"
+else
+  echo "Using multi-objective optimization with $PARETO_ITERS iters"
 fi
 
 
@@ -54,11 +82,23 @@ function do_seed {
   seed_output="$output/$(printf "%03d" "$seed")"
   mkdir -p "$seed_output"
 
-  racket "$HERBIE/src/herbie.rkt" report \
-    --threads yes \
-    --seed "$seed" \
-    "$HERBIE/bench/hamming/" \
-    "$seed_output"
+  if [ -z "$PARETO_ITERS" ]; then
+    racket "$HERBIE/src/herbie.rkt" report \
+      --threads $THREADS \
+      --seed "$seed" \
+      $HERBIE_FLAGS \
+      "$HERBIE/$BENCH" \
+      "$seed_output"
+  else
+    racket "$HERBIE/src/herbie.rkt" report \
+      --threads $THREADS \
+      --seed "$seed" \
+      --num-iters "$PARETO_ITERS" \
+      --pareto \
+      $HERBIE_FLAGS \
+      "$HERBIE/$BENCH" \
+      "$seed_output"
+  fi
 }
 
 # sample herbie behavior
