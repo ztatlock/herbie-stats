@@ -73,7 +73,7 @@ fi
 
 # allocate space for output
 tstamp="$(date "+%Y-%m-%d_%H%M")"
-output="$MYDIR/output/ruler/$tstamp"
+output="$MYDIR/output/seed-variance/$tstamp"
 mkdir -p "$output"
 
 function do_seed {
@@ -86,6 +86,7 @@ function do_seed {
     racket "$HERBIE/src/herbie.rkt" report \
       --threads $THREADS \
       --seed "$seed" \
+      $HERBIE_FLAGS \
       "$HERBIE/$BENCH" \
       "$seed_output"
   else
@@ -94,6 +95,7 @@ function do_seed {
       --seed "$seed" \
       --num-iters "$PARETO_ITERS" \
       --pareto \
+      $HERBIE_FLAGS \
       "$HERBIE/$BENCH" \
       "$seed_output"
   fi
@@ -175,7 +177,6 @@ for rj in $(find . -name 'results.json' | sort); do
          , "avg_bits_err_input": .start
          , "avg_bits_err_output": .end
          , "avg_bits_err_improve": (.start - .end)
-         , "pareto": .pareto
          , "time_improve": .time
          , "seed": $SEED
          , "npts": $NPTS
